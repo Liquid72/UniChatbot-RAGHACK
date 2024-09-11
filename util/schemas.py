@@ -10,3 +10,10 @@ class FindCourseByName(BaseModel):
 class EnrollClass(BaseModel):
     key: str
     classID: int
+
+class DropClass(BaseModel):
+    key: str
+    classID: int
+
+class ClassSchedule(BaseModel):
+    key: str

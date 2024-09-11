@@ -35,9 +35,14 @@ class Database:
             "select * from ClassTable join CourseTable on ClassTable.CourseID = CourseTable.CourseID WHERE CourseTable.CourseName = ?;", (course_name_input))
         records = self.cursor.fetchall()
 
-        output = {'status': 'Success',
+        return {'status': 'Success',
                   'Data': records}
-        return records
+
+    def fetchNumberOfStudentsEnrolledByClassID(self, classID: int) -> int:
+        self.cursor.execute(
+            'select COUNT(*) from EnrollmentTable where ClassID = ?', (classID,))
+        records = self.cursor.fetchone()
+        return records[0]
 
     def fetchStudentByKey(self, key: str) -> tuple:
         self.cursor.execute(
@@ -51,9 +56,8 @@ class Database:
             return {'status': 'Success',
                     'data': records}
 
-        # return records
 
-    def insertClassEnrollmentByClassID(self, key: str, classID: int):
+    def insertClassByClassID(self, key: str, classID: int):
         # Log into which user using private decrypt key
         self.cursor.execute(
             'select * from StudentTable where StudentKey = ?', (key,))
@@ -110,7 +114,7 @@ class Database:
                 'message': 'This Class successfully enrolled'}
 
 
-    def dropClassEnrollmentByClassID(self, key: str, classID: int):
+    def dropClassByClassID(self, key: str, classID: int):
         # Log into which user using private decrypt key
         self.cursor.execute(
             'select * from StudentTable where StudentKey = ?', (key,))
@@ -137,7 +141,7 @@ class Database:
                 'message': 'This Class successfully dropped'}
 
 
-    def fetchClassByStudentKey(self, key: str):
+    def fetchEnrolledClassByStudentKey(self, key: str):
         self.cursor.execute(
             'select * from StudentTable where StudentKey = ?', (key,))
         records = self.cursor.fetchone()
@@ -155,3 +159,4 @@ class Database:
         else:
             return {'status': 'Success',
                     'data': records}
+    
