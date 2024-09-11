@@ -3,6 +3,14 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+'''
+SELECT CT.ClassID, CourT.CourseName, CT.DayOfWeek, CT.ClassStartTime, CT.ClassEndTime,COUNT(*), CT.ClassQuota - COUNT(*) AS CurrentQuota
+FROM EnrollmentTable ET FULL OUTER JOIN
+    ClassTable CT ON ET.ClassID = CT.ClassID
+    INNER JOIN CourseTable CourT ON CT.CourseID = CourT.CourseID
+
+GROUP BY CT.ClassID, CourT.CourseName, CT.ClassQuota, CT.DayOfWeek, CT.ClassStartTime, CT.ClassEndTime;
+'''
 
 
 class Database:
@@ -32,12 +40,16 @@ class Database:
             return {'status': 'Error', 'message': 'Invalid Key'}
 
         self.cursor.execute(
-            "select * from ClassTable join CourseTable on ClassTable.CourseID = CourseTable.CourseID WHERE CourseTable.CourseName = ?;", (course_name_input))
+            "SELECT CT.ClassID, CourT.CourseName, CT.DayOfWeek, CT.ClassStartTime, CT.ClassEndTime, CT.ClassQuota - COUNT(ET.EnrollmentID) AS CurrentQuota\
+                FROM EnrollmentTable ET FULL OUTER JOIN\
+                ClassTable CT ON ET.ClassID = CT.ClassID\
+                INNER JOIN CourseTable CourT ON CT.CourseID = CourT.CourseID\
+                WHERE CourT.CourseName = ?\
+                GROUP BY CT.ClassID, CourT.CourseName, CT.ClassQuota, CT.DayOfWeek, CT.ClassStartTime, CT.ClassEndTime", (course_name_input))
         records = self.cursor.fetchall()
 
-        output = {'status': 'Success',
-                  'Data': records}
-        return records
+        return {'status': 'Success',
+                'Data': records}
 
     def fetchStudentByKey(self, key: str) -> tuple:
         self.cursor.execute(
@@ -46,14 +58,12 @@ class Database:
         if records is None:
             return {'status': 'Error',
                     'message': 'Invalid Key'}
-        
-        else: 
+
+        else:
             return {'status': 'Success',
                     'data': records}
 
-        # return records
-
-    def insertClassEnrollmentByClassID(self, key: str, classID: int):
+    def insertClassByClassID(self, key: str, classID: int):
         # Log into which user using private decrypt key
         self.cursor.execute(
             'select * from StudentTable where StudentKey = ?', (key,))
@@ -62,7 +72,7 @@ class Database:
             return {'status': 'Error',
                     'message': 'Invalid Key'}
         current_studentID = records[0]
-    
+
         # verify that class is not full and make sure that it doesn't clash with other courses that has been enrolled
         self.cursor.execute(
             'select ClassQuota, DayOfWeek, ClassStartTime, ClassEndTime from ClassTable where ClassID = ?', (classID,))
@@ -88,9 +98,9 @@ class Database:
                 if (e_class[3] <= newCST and newCST <= e_class[4]) or (e_class[3] <= newCET and newCET <= e_class[4]):
                     return {'status': 'Error',
                             'message': 'Clashes with other courses'}
-        
+
         # check that the students should not take the same course twice
-        query = 'select distinct CourseID\
+        query = 'select distinct CT.CourseID\
                     from CourseTable\
                     inner join ClassTable CT on CourseTable.CourseID = CT.CourseID\
                     inner join EnrollmentTable ET on CT.ClassID = ET.ClassID\
@@ -109,8 +119,7 @@ class Database:
         return {'status': 'Success',
                 'message': 'This Class successfully enrolled'}
 
-
-    def dropClassEnrollmentByClassID(self, key: str, classID: int):
+    def dropClassByClassID(self, key: str, classID: int):
         # Log into which user using private decrypt key
         self.cursor.execute(
             'select * from StudentTable where StudentKey = ?', (key,))
@@ -131,13 +140,12 @@ class Database:
             # drop the student from this class
             eid = records[0]
             self.cursor.execute(
-                'delete from EnrollmentTable where EnrollmentID', (eid, ))
+                'delete from EnrollmentTable where EnrollmentID = ?', (eid, ))
             self.conn.commit()
             return {'status': 'Success',
-                'message': 'This Class successfully dropped'}
+                    'message': 'This Class successfully dropped'}
 
-
-    def fetchClassByStudentKey(self, key: str):
+    def fetchEnrolledClassByStudentKey(self, key: str):
         self.cursor.execute(
             'select * from StudentTable where StudentKey = ?', (key,))
         records = self.cursor.fetchone()
@@ -147,7 +155,11 @@ class Database:
         current_studentID = records[0]
 
         self.cursor.execute(
-            'select * from EnrollmentTable where StudentID = ?', (current_studentID,))
+            'SELECT CT.ClassID, CourT.CourseName, CT.DayOfWeek, CT.ClassStartTime, CT.ClassEndTime FROM EnrollmentTable ET \
+                INNER JOIN ClassTable CT ON ET.ClassID = CT.ClassID\
+                INNER JOIN StudentTable ST on ET.StudentID = ST.StudentID\
+                INNER JOIN CourseTable CourT ON CourT.CourseID = CT.CourseID\
+                WHERE ST.StudentID = ?;', (current_studentID,))
         records = self.cursor.fetchall()
         if records is None:
             return {'status': 'Error',

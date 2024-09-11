@@ -33,7 +33,7 @@ def function_manager(tools_call, completion):
         function_call_message = {
             "role": "tool",
             "content": f"{student}",
-            "tool_call_id": completion.choices[0].message.tool_calls[0].id
+            "tool_call_id": tools_call.id
         }
 
     elif function_name == "FindCourseByName":
@@ -45,19 +45,56 @@ def function_manager(tools_call, completion):
         function_call_message = {
             "role": "tool",
             "content": f"{course}",
-            "tool_call_id": completion.choices[0].message.tool_calls[0].id
+            "tool_call_id": tools_call.id
         }
 
     elif function_name == "EnrollClass":
         arguments = json.loads(tools_call.function.arguments)
         key = arguments['key']
         classID = arguments['classID']
-        enrollment = Database.insertClassEnrollmentByClassID(key, classID)
+        enrollment = Database.insertClassByClassID(key, classID)
 
         function_call_message = {
             "role": "tool",
             "content": f"{enrollment}",
-            "tool_call_id": completion.choices[0].message.tool_calls[0].id
+            "tool_call_id": tools_call.id
+        }
+
+    elif function_name == "encChat":
+        arguments = json.loads(tools_call.function.arguments)
+        key = arguments['key']
+        classID = arguments['classID']
+        enrollment = Database.insertClassByClassID(key, classID)
+
+        function_call_message = {
+            "role": "tool",
+            "content": f"{enrollment}",
+            "tool_call_id": tools_call.id
+        }
+
+
+    elif function_name == "UnEnrollClass":
+        arguments = json.loads(tools_call.function.arguments)
+        print(arguments)
+        key = arguments['key']
+        classID = arguments['classID']
+        drop = Database.dropClassByClassID(key, classID)
+
+        function_call_message = {
+            "role": "tool",
+            "content": f"{drop}",
+            "tool_call_id": tools_call.id
+        }
+
+    elif function_name == "GetMyClassSchedule":
+        arguments = json.loads(tools_call.function.arguments)
+        key = arguments['key']
+        schedule = Database.fetchEnrolledClassByStudentKey(key)
+
+        function_call_message = {
+            "role": "tool",
+            "content": f"{schedule}",
+            "tool_call_id": tools_call.id
         }
 
     return function_call_message

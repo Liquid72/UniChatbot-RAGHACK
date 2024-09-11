@@ -35,7 +35,7 @@ CREATE TABLE ClassTable
 
 CREATE TABLE EnrollmentTable
 (
-    EnrollmentID INT PRIMARY KEY,
+    EnrollmentID INT IDENTITY(1,1) PRIMARY KEY,
     StudentID    INT,
     ClassID      INT,
     FOREIGN KEY (StudentID) REFERENCES StudentTable (StudentID),

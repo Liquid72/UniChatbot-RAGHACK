@@ -7,24 +7,29 @@ load_dotenv()
 os.system("cls")
 
 tools = [pydantic_function_tool(GetUserInfo), pydantic_function_tool(FindCourseByName),
-         pydantic_function_tool(EnrollClass)]
+         pydantic_function_tool(EnrollClass), pydantic_function_tool(UnEnrollClass), pydantic_function_tool(ClassSchedule)]
 
 messages = [
-    {"role": "system", "content": 'You are an AI'},
-    {"role": "user", "content": f"Key saya adalah lcotal, Carikan saya kelas Calculus 1"},
+    {"role": "system", "content": 'You are Contoso University AI Chatbot'},
 ]
 
-inference = completion(messages, tools)
-tools_call = inference.choices[0].message.tool_calls[0]
-
-messages.append(inference.choices[0].message)
-messages.append(function_manager(tools_call, inference))
-
-# print(messages)
-# for m in messages:
-    # print(m)
-
-inference = completion(messages, tools)
-print(inference.choices[0].message.content)
-
-
+while True:
+    input_message = input("User: ")
+    messages.append({"role": "user", "content": input_message})
+    inference = completion(messages, tools)
+    if inference.choices[0].message.tool_calls:
+        if len(inference.choices[0].message.tool_calls) > 1:
+            messages.append(inference.choices[0].message)
+            for history in inference.choices[0].message.tool_calls:
+                messages.append(function_manager(history, inference))
+        else:
+            tools_call = inference.choices[0].message.tool_calls[0]
+            # print(f"Inference Message\n\n{inference.choices[0].message}")
+            messages.append(inference.choices[0].message)
+            messages.append(function_manager(tools_call, inference))
+        # print(messages)
+        inference = completion(messages, tools)
+    else:
+        messages.append(inference.choices[0].message)
+    print(f"History\n\n {messages}")
+    print(f"AI: {inference.choices[0].message.content}")
