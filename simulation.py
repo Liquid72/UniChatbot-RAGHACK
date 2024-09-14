@@ -11,6 +11,7 @@ tools = [pydantic_function_tool(GetUserInfo), pydantic_function_tool(FindCourseB
 
 messages = [
     {"role": "system", "content": 'You are Contoso University AI Chatbot'},
+    {"role": "system", "content": 'You are Contoso University AI Chatbot'},
 ]
 
 while True:
