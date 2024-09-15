@@ -11,6 +11,8 @@ SELECT * FROM EnrollmentTable ET
          INNER JOIN CourseTable CT ON CT.CourseID = CLT.CourseID
 WHERE ST.StudentName = 'Liam Frost'
 '''
+
+
 class Database:
     def __init__(self) -> None:
         self.conn = pyodbc.connect(os.getenv("CONNECTION_STRING"))
@@ -77,9 +79,9 @@ class Database:
 
         # Check student is eligible to take this course
         print(f"Key: {key} - {type(key)} - {current_studentID} - {type(current_studentID)} - {classID} - {type(classID)}")
-        if self.checkEligibilityEnrollCourseByMajorID(key, current_majorID, classID)['status'] == 'Error':
-            return {'status': 'Error',
-                    'message': 'This student is not allowed to take this course'}
+        # if self.checkEligibilityEnrollCourseByMajorID(key, current_majorID, classID)['status'] == 'Error':
+            # return {'status': 'Error',
+                    # 'message': 'This student is not allowed to take this course'}
 
         # check that the students should not take the same course twice
         query = 'select CT.CourseID\
@@ -95,8 +97,8 @@ class Database:
         for i in enrolled_courses:
             if i[0] == new_course:
                 return {'status': 'Error',
-                    'message': 'Student already enrolled in this course'}
-    
+                        'message': 'Student already enrolled in this course'}
+
         # verify that class is not full and make sure that it doesn't clash with other courses that has been enrolled
         self.cursor.execute(
             'select ClassQuota, DayOfWeek, ClassStartTime, ClassEndTime from ClassTable where ClassID = ?', (classID,))
@@ -122,7 +124,7 @@ class Database:
                 if (e_class[3] <= newCST and newCST <= e_class[4]) or (e_class[3] <= newCET and newCET <= e_class[4]):
                     return {'status': 'Error',
                             'message': 'Clashes with other courses'}
-        
+
         self.cursor.execute(
             'INSERT INTO EnrollmentTable (StudentID, ClassID) values (?, ?)', (current_studentID, classID))
         self.conn.commit()
@@ -179,7 +181,6 @@ class Database:
                     'data': records}
 
     def checkEligibilityEnrollCourseByMajorID(self, key: str, majorID: int, courseID: int):
-        print(f"Data Passed | Key: {key} - {type(key)} - {majorID} - {type(majorID)} - {courseID} - {type(courseID)}")
         self.cursor.execute(
             'select * from StudentTable where StudentKey = ?', (key,))
         records = self.cursor.fetchone()
@@ -188,14 +189,17 @@ class Database:
                     'message': 'Invalid Key'}
         current_studentID = records[0]
         self.cursor.execute(
-            'select * from MajorCourseTable where MajorID = ? and CourseID = ?', (majorID, courseID))
+            'select MCT.majorID from MajorCourseTable MCT\
+            INNER JOIN MajorTable MT ON MT.MajorID = MCT.MajorID\
+             WHERE MCT.CourseID = ?', (courseID, ))
         records = self.cursor.fetchall()
-        if records is None:
+        for record in records:
+            if record[0] == majorID:
+                return {'status': 'Success',
+                        'data': records}
+        else:
             return {'status': 'Error',
                     'message': 'This student is not allowed to take this course'}
-        else:
-            return {'status': 'Success',
-                    'data': records}
 
     def GetCourseListByStudentID(self, key: str):
         self.cursor.execute(
@@ -205,8 +209,6 @@ class Database:
             return {'status': 'Error',
                     'message': 'Invalid Key'}
         current_studentID = records[0]
-
-        "Fetch Major ID By StudentID"
         self.cursor.execute(
             'select StudentMajorID from StudentTable where StudentID = ?', (current_studentID,))
         current_majorID = self.cursor.fetchone()[0]
@@ -229,7 +231,7 @@ class Database:
             print('Success')
             return {'status': 'Success',
                     'data': output}
-        
+
     def checkTodayScedule(self, key: str):
         self.cursor.execute(
             'select * from StudentTable where StudentKey = ?', (key,))
@@ -252,7 +254,7 @@ class Database:
         else:
             return {'status': 'Success',
                     'data': records}
-        
+
     def FindCourseScheduleByCourseID(self, course_id: int, key: str):
         self.cursor.execute(
             'select * from StudentTable where StudentKey = ?', (key,))
