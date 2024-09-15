@@ -10,20 +10,18 @@ load_dotenv()
 st.title('Contoso University AI Chatbot')
 
 tools = [pydantic_function_tool(GetUserInfo), pydantic_function_tool(FindCourseByName),
-         pydantic_function_tool(
-             EnrollClass), pydantic_function_tool(UnEnrollClass),
-         pydantic_function_tool(
-             GetMyClassSchedule), pydantic_function_tool(GetTodayClass),
-         pydantic_function_tool(GetCourseByMajor)]
+         pydantic_function_tool(EnrollClass), pydantic_function_tool(UnEnrollClass),
+         pydantic_function_tool(GetMyClassSchedule), pydantic_function_tool(GetTodayClass),
+         pydantic_function_tool(GetCourseByMajor), pydantic_function_tool(FindCourseScheduleByCourseID),
+         ]
 
 if "messages" not in st.session_state:
     st.session_state["messages"] = [
         {"role": "system", "content": """You are Contoso University AI Chatbot, If you got ambiguous answer, please ask again,
-        If you want to know about the student information, please ask the user to get the student info by key and give ,
         If you want to know about the course, please ask the user to find the course by name,
         If you want to enroll the student to the course, please ask the user to enroll the class by classID if the user not specify class id, please ask the user to find the course by name first,
-        If user said login, then the word coming after login is the student key that you must use to login, then you output the user information (the student ID, name, and major name)
-         """}
+        If user said login, then the word coming after login is the student key that you must use to login, then you output the user information (the student ID, name, and major name),
+        If user want to get the available classes schedule based on the courses that the major, then you output the classes schedules of the courses that correspond to their major,"""}
     ]
 
 for msg in st.session_state.messages[1:]:
@@ -58,17 +56,10 @@ if prompt := st.chat_input():
             st.session_state.messages.append(
                 function_manager(tools_call, inference))
 
-        # print(st.session_state.messages)
         inference = completion(st.session_state.messages, tools)
-        # print(inference)
         st.session_state.messages.append(
             {"role": "assistant", "content": inference.choices[0].message.content})
     else:
-        # messages.append(inference.choices[0].message)
         st.session_state.messages.append(
             {"role": "assistant", "content": inference.choices[0].message.content})
     st.chat_message("AI").write(inference.choices[0].message.content)
-    # except Exception as e:
-    #     print(e)
-    #     st.session_state.messages.append({"role": "assistant", "content": "We're sorry, but something went wrong. Please try again."})
-    #     st.chat_message("AI").write("We're sorry, but something went wrong. Please try again.")
