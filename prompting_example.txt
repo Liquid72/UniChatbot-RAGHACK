@@ -1,0 +1,5 @@
+Example 1
+1. login lcotl (Liam Frost)
+2. Can I get all the courses I can take
+3. Can I get the schedule of all of these courses
+4. Can you make me a schedule of the courses I can take

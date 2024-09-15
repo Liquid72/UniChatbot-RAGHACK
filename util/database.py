@@ -1,16 +1,8 @@
 import pyodbc
 import os
 from dotenv import load_dotenv
-
+from datetime import datetime
 load_dotenv()
-'''
-SELECT CT.ClassID, CourT.CourseName, CT.DayOfWeek, CT.ClassStartTime, CT.ClassEndTime,COUNT(*), CT.ClassQuota - COUNT(*) AS CurrentQuota
-FROM EnrollmentTable ET FULL OUTER JOIN
-    ClassTable CT ON ET.ClassID = CT.ClassID
-    INNER JOIN CourseTable CourT ON CT.CourseID = CourT.CourseID
-
-GROUP BY CT.ClassID, CourT.CourseName, CT.ClassQuota, CT.DayOfWeek, CT.ClassStartTime, CT.ClassEndTime;
-'''
 
 
 class Database:
@@ -53,8 +45,9 @@ class Database:
 
     def fetchStudentByKey(self, key: str) -> tuple:
         self.cursor.execute(
-            'select * from StudentTable where StudentKey = ?', (key,))
+            'select StudentID, StudentName, StudentMajorID from StudentTable where StudentKey = ?', (key,))
         records = self.cursor.fetchone()
+        print(records)
         if records is None:
             return {'status': 'Error',
                     'message': 'Invalid Key'}
@@ -164,6 +157,71 @@ class Database:
         if records is None:
             return {'status': 'Error',
                     'message': 'Student is not enrolled in any class'}
+        else:
+            return {'status': 'Success',
+                    'data': records}
+
+    def checkEligibilityEnrollCourseByMajorID(self, key: str, majorID: int, courseID: int):
+        self.cursor.execute(
+            'select * from StudentTable where StudentKey = ?', (key,))
+        records = self.cursor.fetchone()
+        if records is None:
+            return {'status': 'Error',
+                    'message': 'Invalid Key'}
+        current_studentID = records[0]
+        self.cursor.execute(
+            'select * from MajorCourseTable where MajorID = ? and CourseID = ?', (majorID, courseID))
+        records = self.cursor.fetchall()
+        if records is None:
+            return {'status': 'Error',
+                    'message': 'This student is not allowed to take this course'}
+        else:
+            return {'status': 'Success',
+                    'data': records}
+
+    def GetCourseListByMajorID(self, key: str, majorID: int):
+        self.cursor.execute(
+            'select * from StudentTable where StudentKey = ?', (key,))
+        records = self.cursor.fetchone()
+        if records is None:
+            return {'status': 'Error',
+                    'message': 'Invalid Key'}
+        current_studentID = records[0]
+
+        self.cursor.execute(
+            'select MCT.CourseID, CT.CourseName from MajorCourseTable MCT\
+                INNER JOIN CourseTable CT on MCT.CourseID = CT.CourseID\
+                WHERE MajorID = ?', (majorID,))
+        records = self.cursor.fetchall()
+        print(records)
+        if records is None:
+            print('No course found for this major')
+            return {'status': 'Error',
+                    'message': 'No course found for this major'}
+        else:
+            print('Success')
+            return {'status': 'Success',
+                    'data': records}
+        
+    def checkTodayScedule(self, key: str):
+        self.cursor.execute(
+            'select * from StudentTable where StudentKey = ?', (key,))
+        records = self.cursor.fetchone()
+        if records is None:
+            return {'status': 'Error',
+                    'message': 'Invalid Key'}
+        current_studentID = records[0]
+
+        self.cursor.execute(
+            'SELECT CT.ClassID, CourT.CourseName, CT.DayOfWeek, CT.ClassStartTime, CT.ClassEndTime FROM EnrollmentTable ET \
+                INNER JOIN ClassTable CT ON ET.ClassID = CT.ClassID\
+                INNER JOIN StudentTable ST on ET.StudentID = ST.StudentID\
+                INNER JOIN CourseTable CourT ON CourT.CourseID = CT.CourseID\
+                WHERE ST.StudentID = ? AND CT.DayOfWeek = ?', (current_studentID, datetime.today().weekday()))
+        records = self.cursor.fetchall()
+        if records is None:
+            return {'status': 'Error',
+                    'message': 'Student is not enrolled in any class or no class today'}
         else:
             return {'status': 'Success',
                     'data': records}

@@ -7,7 +7,7 @@ load_dotenv()
 os.system("cls")
 
 tools = [pydantic_function_tool(GetUserInfo), pydantic_function_tool(FindCourseByName),
-         pydantic_function_tool(EnrollClass), pydantic_function_tool(UnEnrollClass), pydantic_function_tool(ClassSchedule)]
+         pydantic_function_tool(EnrollClass), pydantic_function_tool(UnEnrollClass), pydantic_function_tool(GetTodayClass)]
 
 messages = [
     {"role": "system", "content": 'You are Contoso University AI Chatbot'},

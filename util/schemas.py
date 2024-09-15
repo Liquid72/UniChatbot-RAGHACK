@@ -18,3 +18,9 @@ class UnEnrollClass(BaseModel):
 class GetMyClassSchedule(BaseModel):
     key: str
 
+class GetTodayClass(BaseModel):
+    key: str
+
+class GetCourseByMajor(BaseModel):
+    key: str
+    major_id: int

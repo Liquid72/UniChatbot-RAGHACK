@@ -3,6 +3,8 @@ DROP TABLE IF EXISTS EnrollmentTable;
 DROP TABLE IF EXISTS ClassTable;
 DROP TABLE IF EXISTS StudentTable;
 DROP TABLE IF EXISTS CourseTable;
+DROP TABLE IF EXISTS MajorTable;
+DROP TABLE IF EXISTS MajorCourseTable;
 
 --
 use universitydb;
@@ -13,13 +15,28 @@ CREATE TABLE CourseTable
     CourseName VARCHAR(80)
 );
 
+CREATE TABLE MajorTable
+(
+    MajorID   INT NOT NULL IDENTITY PRIMARY KEY,
+    MajorName VARCHAR(80)
+);
+
+CREATE TABLE MajorCourseTable
+(
+    MajorID  INT,
+    CourseID INT,
+    FOREIGN KEY (MajorID) REFERENCES MajorTable (MajorID),
+    FOREIGN KEY (CourseID) REFERENCES CourseTable (CourseID)
+);
+
 
 CREATE TABLE StudentTable
 (
     StudentID   INT PRIMARY KEY IDENTITY NOT NULL,
     StudentName VARCHAR(80),
     StudentKey  VARCHAR(30),
-    StudentMajor VARCHAR(50)
+    StudentMajorID INT,
+    FOREIGN KEY (StudentMajorID) REFERENCES MajorTable (MajorID)
 );
 
 CREATE TABLE ClassTable
@@ -35,7 +52,7 @@ CREATE TABLE ClassTable
 
 CREATE TABLE EnrollmentTable
 (
-    EnrollmentID INT IDENTITY(1,1) PRIMARY KEY,
+    EnrollmentID INT IDENTITY PRIMARY KEY,
     StudentID    INT,
     ClassID      INT,
     FOREIGN KEY (StudentID) REFERENCES StudentTable (StudentID),
@@ -59,60 +76,73 @@ VALUES ('Calculus 1'),
        ('Database Systems'),
        ('Computer Networks');
 
-select *
-from CourseTable;
+INSERT INTO MajorTable(MajorName)
+VALUES ('Computer Engineering'),
+       ('Computer Science'),
+       ('Artificial Intelligence'),
+       ('Data Science');
 
-INSERT INTO StudentTable (StudentName, StudentKey)
-VALUES ('Mia Tanner', '1zorv', 'Computer Engineering'),
-       ('Alex Moran', '9b26h', 'Computer Science'),
-       ('Liam Frost', 'lcotl', 'Computer Engineering'),
-       ('Liam Waters', 'bdvfs', 'Artificial Intelligence'),
-       ('Alex Parker', 'c5qfy', 'Data Science'),
-       ('Liam Chen', 'alahd', 'Data Science'),
-       ('Liam Clark', 'bo4fh', 'Computer Science'),
-       ('Liam Wright', '1gnry', 'Artificial Intelligence'),
-       ('Liam Bennett', 's5i92', 'Computer Engineering'),
-       ('Liam Grayson', 'dv8cp', 'Artificial Intelligence'),
-       ('Liam Jennings', 'ed6zf', 'Data Science'),
-       ('Liam Miller', 'hrdf4', 'Computer Science'),
-       ('Liam Sawyer', '5se1o', 'Artificial Intelligence'),
-       ('Aiden Smith', 'g8ytd', 'Computer Engineering'),
-       ('Eliot Warren', 'jipmz', 'Data Science'),
-       ('Liam Smith', 'qrhg0', 'Data Science'),
-       ('Liam Stone', 'y23lr', 'Computer Science'),
-       ('Alex Carter', '551l0', 'Computer Engineering'),
-       ('Liam Morris', 'zoflr', 'Artificial Intelligence'),
-       ('Liam Turner', 'mqy77', 'Data Science'),
-       ('Ava Smith', 'gnnfz', 'Artificial Intelligence'),
-       ('Amy Smith', 'sv3xw', 'Computer Engineering'),
-       ('Liam Murphy', '1n2ww', 'Computer Science'),
-       ('Liam Walker', '7140b', 'Data Science'),
-       ('Liam Green', 'eidpq', 'Computer Engineering'),
-       ('Liam Parker', 'ktnvs', 'Artificial Intelligence'),
-       ('Liam Hendrix', 'gx8xz', 'Artificial Intelligence'),
-       ('Eli Brooks', 'n4tni', 'Computer Science'),
-       ('Anna Clark', 'fhekf', 'Data Science'),
-       ('Liam Baker', 'i9guy', 'Computer Engineering'),
-       ('Lucas Morris', 'b83e1', 'Data Science'),
-       ('Liam Evans', '2xow0', 'Artificial Intelligence'),
-       ('Alex Rivera', 'md3az', 'Computer Engineering'),
-       ('Liam Hughes', 'otre5', 'Computer Engineering'),
-       ('Alex Stone', 'arux6', 'Artificial Intelligence'),
-       ('Liam Brooks', 'uvii2', 'Computer Science'),
-       ('Alex Smith', 'howrj', 'Artificial Intelligence'),
-       ('Ava Woods', 'maboi', 'Computer Science'),
-       ('Leo Foster', 'fwzex', 'Computer Engineering'),
-       ('Alex Johnson', 'mb1eo', 'Computer Engineering'),
-       ('Liam Fox', '57zfe', 'Computer Science'),
-       ('Lucas Green', 'v146x', 'Data Science'),
-       ('Liam Carter', 'd9uqb', 'Data Science'),
-       ('Alice Green', '5fub1', 'Computer Science'),
-       ('Liam Reid', 'g7f6l', 'Computer Engineering'),
-       ('Liam Reed', 'tpgj0', 'Artificial Intelligence'),
-       ('Liam Foster', 'j67vf', 'Artificial Intelligence'),
-       ('Anna Blake', '2ejvr', 'Computer Science'),
-       ('Emily Brown', 'tq73s', 'Data Science'),
-       ('Emma Brooks', 'hbbyt', 'Computer Engineering');
+INSERT INTO MajorCourseTable (MajorID, CourseID)
+VALUES (1, 1), (1, 2), (1, 3), (1, 8),
+        (1, 9), (1, 10), (1, 11), (1, 12), (1, 15),
+        (2, 1), (2, 2), (2, 3), (2, 6),
+        (2, 9), (2, 10), (2, 11), (2, 12), (2, 13), (2, 14),
+        (3, 1), (3, 2), (3, 3), (3, 4), (3, 5), (3, 7),
+        (3, 10), (3, 11), (3, 13), (3, 14),
+        (4, 1), (4, 2), (4, 3), (4, 4), (4, 5), (4, 7),
+        (4, 9), (4, 10), (4, 13), (4, 14), (4, 15);
+
+INSERT INTO StudentTable (StudentName, StudentKey, StudentMajorID)
+VALUES ('Mia Tanner', '1zorv', 1),
+       ('Alex Moran', '9b26h', 2),
+       ('Liam Frost', 'lcotl', 1),
+       ('Liam Waters', 'bdvfs', 3),
+       ('Alex Parker', 'c5qfy', 4),
+       ('Liam Chen', 'alahd', 4),
+       ('Liam Clark', 'bo4fh', 2),
+       ('Liam Wright', '1gnry', 3),
+       ('Liam Bennett', 's5i92', 1),
+       ('Liam Grayson', 'dv8cp', 3),
+       ('Liam Jennings', 'ed6zf', 4),
+       ('Liam Miller', 'hrdf4', 2),
+       ('Liam Sawyer', '5se1o', 3),
+       ('Aiden Smith', 'g8ytd', 1),
+       ('Eliot Warren', 'jipmz', 4),
+       ('Liam Smith', 'qrhg0', 4),
+       ('Liam Stone', 'y23lr', 2),
+       ('Alex Carter', '551l0', 1),
+       ('Liam Morris', 'zoflr', 3),
+       ('Liam Turner', 'mqy77', 4),
+       ('Ava Smith', 'gnnfz', 3),
+       ('Amy Smith', 'sv3xw', 1),
+       ('Liam Murphy', '1n2ww', 2),
+       ('Liam Walker', '7140b', 4),
+       ('Liam Green', 'eidpq', 1),
+       ('Liam Parker', 'ktnvs', 3),
+       ('Liam Hendrix', 'gx8xz', 3),
+       ('Eli Brooks', 'n4tni', 2),
+       ('Anna Clark', 'fhekf', 4),
+       ('Liam Baker', 'i9guy', 1),
+       ('Lucas Morris', 'b83e1', 4),
+       ('Liam Evans', '2xow0', 3),
+       ('Alex Rivera', 'md3az', 1),
+       ('Liam Hughes', 'otre5', 1),
+       ('Alex Stone', 'arux6', 3),
+       ('Liam Brooks', 'uvii2', 2),
+       ('Alex Smith', 'howrj', 3),
+       ('Ava Woods', 'maboi', 2),
+       ('Leo Foster', 'fwzex', 1),
+       ('Alex Johnson', 'mb1eo', 1),
+       ('Liam Fox', '57zfe', 2),
+       ('Lucas Green', 'v146x', 4),
+       ('Liam Carter', 'd9uqb', 4),
+       ('Alice Green', '5fub1', 2),
+       ('Liam Reid', 'g7f6l', 1),
+       ('Liam Reed', 'tpgj0', 3),
+       ('Liam Foster', 'j67vf', 3),
+       ('Anna Blake', '2ejvr', 2),
+       ('Emily Brown', 'tq73s', 4),
+       ('Emma Brooks', 'hbbyt', 1);
 
 INSERT INTO ClassTable (ClassID, CourseID, DayOfWeek, ClassStartTime, ClassEndTime, ClassQuota) VALUES
 (1, 1, 'Friday', '09:00:00', '10:00:00', 10),
@@ -151,9 +181,9 @@ INSERT INTO ClassTable (ClassID, CourseID, DayOfWeek, ClassStartTime, ClassEndTi
 (34, 15, 'Tuesday', '09:00:00', '10:00:00', 5),
 (35, 15, 'Friday', '11:00:00', '12:00:00', 5);
 
-select * from ClassTable join CourseTable on ClassTable.CourseID = CourseTable.CourseID where CourseName = 'Calculus 1';
+---select * from ClassTable join CourseTable on ClassTable.CourseID = CourseTable.CourseID where CourseName = 'Calculus 1';
 
-select * from CourseTable;
-select * from StudentTable;
-select * from StudentTable where StudentKey = '1zorv';
+---select * from CourseTable;
+---select * from StudentTable;
+---select * from StudentTable where StudentKey = '1zorv';
 

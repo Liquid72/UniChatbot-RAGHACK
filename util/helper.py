@@ -34,7 +34,6 @@ def function_manager(tools_call, completion):
             "role": "tool",
             "content": f"{student}",
             "tool_call_id": tools_call.id
-            "tool_call_id": tools_call.id
         }
 
     elif function_name == "FindCourseByName":
@@ -46,7 +45,6 @@ def function_manager(tools_call, completion):
         function_call_message = {
             "role": "tool",
             "content": f"{course}",
-            "tool_call_id": tools_call.id
             "tool_call_id": tools_call.id
         }
 
@@ -109,6 +107,31 @@ def function_manager(tools_call, completion):
         function_call_message = {
             "role": "tool",
             "content": f"{schedule}",
+            "tool_call_id": tools_call.id
+        }
+
+    elif function_name == "GetTodayClass":
+        arguments = json.loads(tools_call.function.arguments)
+        key = arguments['key']
+        schedule = Database.fetchEnrolledClassByStudentKey(key)
+
+        function_call_message = {
+            "role": "tool",
+            "content": f"{schedule}",
+            "tool_call_id": tools_call.id
+        }
+
+    elif function_name == "GetCourseByMajor":
+        arguments = json.loads(tools_call.function.arguments)
+        key = arguments['key']
+        major_id = arguments['major_id']
+        print("TEST", key, major_id)
+        classes = Database.GetCourseListByMajorID(key, major_id)
+        print(classes)
+
+        function_call_message = {
+            "role": "tool",
+            "content": f"{classes}",
             "tool_call_id": tools_call.id
         }
 
