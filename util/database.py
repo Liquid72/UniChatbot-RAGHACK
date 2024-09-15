@@ -45,7 +45,9 @@ class Database:
 
     def fetchStudentByKey(self, key: str) -> tuple:
         self.cursor.execute(
-            'select StudentID, StudentName, StudentMajorID from StudentTable where StudentKey = ?', (key,))
+            'select ST.StudentID, ST.StudentName, MT.MajorName from StudentTable ST\
+              INNER JOIN MajorTable MT ON MT.MajorID = ST.StudentMajorID\
+              where StudentKey = ?', (key,))
         records = self.cursor.fetchone()
         print(records)
         if records is None:

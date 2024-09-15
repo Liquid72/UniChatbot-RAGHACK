@@ -22,7 +22,7 @@ if "messages" not in st.session_state:
         If you want to know about the student information, please ask the user to get the student info by key and give ,
         If you want to know about the course, please ask the user to find the course by name,
         If you want to enroll the student to the course, please ask the user to enroll the class by classID if the user not specify class id, please ask the user to find the course by name first,
-        If user said login then you can ask the user to login by key,
+        If user said login, then the word coming after login is the student key that you must use to login, then you output the user information (the student ID, name, and major name)
          """}
     ]
 
