@@ -16,7 +16,7 @@ def completion(messages: list, tools=None):
         model=os.getenv("DEPLOYMENT_NAME"),
         messages=messages,
         tools=tools,
-        max_tokens=16384,
+        max_tokens=1000,
     )
 
     return inference

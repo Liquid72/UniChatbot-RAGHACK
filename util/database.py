@@ -4,14 +4,6 @@ from dotenv import load_dotenv
 from datetime import datetime
 load_dotenv()
 
-'''
-SELECT * FROM EnrollmentTable ET
-         INNER JOIN StudentTable ST ON ST.StudentID = ET.StudentID
-        INNER JOIN ClassTable CLT ON CLT.ClassID = ET.ClassID
-         INNER JOIN CourseTable CT ON CT.CourseID = CLT.CourseID
-WHERE ST.StudentName = 'Liam Frost'
-'''
-
 
 class Database:
     def __init__(self) -> None:
@@ -67,7 +59,6 @@ class Database:
                     'data': records}
 
     def insertClassByClassID(self, key: str, classID: int):
-        # Log into which user using private decrypt key
         self.cursor.execute(
             'select * from StudentTable where StudentKey = ?', (key,))
         records = self.cursor.fetchone()
@@ -76,14 +67,6 @@ class Database:
                     'message': 'Invalid Key'}
         current_studentID = records[0]
         current_majorID = records[3]
-
-        # Check student is eligible to take this course
-        print(f"Key: {key} - {type(key)} - {current_studentID} - {type(current_studentID)} - {classID} - {type(classID)}")
-        # if self.checkEligibilityEnrollCourseByMajorID(key, current_majorID, classID)['status'] == 'Error':
-            # return {'status': 'Error',
-                    # 'message': 'This student is not allowed to take this course'}
-
-        # check that the students should not take the same course twice
         query = 'select CT.CourseID\
                     FROM EnrollmentTable ET\
                     INNER JOIN ClassTable CLT ON ET.ClassID = CLT.ClassID\
